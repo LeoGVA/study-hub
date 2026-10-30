@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+    <!-- iPad / iPhone Home Screen App support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="StudyHub">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyHub - 青チャート解説まとめ＆学習ダッシュボード</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter & Noto Sans JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.7);
+    }
+    /* Modern smooth animations & micro-interactions */
+    @keyframes backdropFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.95) translateY(12px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-backdrop:not(.hidden) {
+      animation: backdropFade 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .modal-backdrop:not(.hidden) > .modal-content {
+      animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-view-fade {
+      animation: fadeInSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes starPop {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.4) rotate(15deg); }
+      70% { transform: scale(0.85) rotate(-5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .star-pop {
+      animation: starPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+    .animate-pulse-subtle {
+      animation: subtlePulse 2.2s infinite ease-in-out;
+    }
+
+    @keyframes progressShimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-active {
+      background-size: 200% 100%;
+      background-image: linear-gradient(
+        90deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.28) 50%,
+        rgba(255,255,255,0) 100%
+      );
+      animation: progressShimmer 2.5s infinite linear;
+    }
+
+    /* Tactile card hover & press effects */
+    .study-card {
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .study-card:hover {
+      transform: translateY(-3px);
+    }
+    .study-card:active {
+      transform: scale(0.985);
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-200 antialiased selection:bg-blue-500 selection:text-white">
+
+  <!-- TOP NAVBAR -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3 cursor-pointer select-none" onclick="app.switchView('book', '3t39887g9b')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">StudyHub</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-medium">青チャート 数学</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">解説動画まとめ ＆ 逆算ペースメーカー</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs (Center) -->
+        <nav class="hidden lg:flex items-center space-x-1" id="nav-tabs">
+          <!-- Populated by JS: 数I+A, 数II+B, 数III, 数C, ペースメーカー, カスタム資料, ダッシュボード -->
+        </nav>
+
+        <!-- Right Quick Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Pomodoro Timer Trigger -->
+          <button id="btn-timer-toggle" onclick="app.toggleTimerModal()" class="relative flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-sm font-medium transition shadow-sm" title="ポモドーロ集中タイマー">
+            <i data-lucide="timer" class="w-4 h-4 text-amber-500"></i>
+            <span id="nav-timer-display" class="font-mono text-xs text-slate-700 dark:text-slate-300">25:00</span>
+            <span id="nav-timer-dot" class="w-2 h-2 rounded-full bg-emerald-500 hidden animate-ping"></span>
+          </button>
+
+          <!-- Backup / Restore Button -->
+          <button onclick="app.openBackupModal()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 transition shadow-sm" title="データ管理（バックアップ・復元）">
+            <i data-lucide="hard-drive-download" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Dark / Light Mode Toggle -->
+          <button onclick="app.toggleDarkMode()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 transition shadow-sm" title="ダークモード切替">
+            <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+          </button>
+
+          <!-- Mobile Menu Button -->
+          <button onclick="app.toggleMobileMenu()" class="lg:hidden p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-2 pb-4 space-y-1">
+      <!-- Populated dynamically -->
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    
+    <!-- VIEW 1: BOOK VIEWER (青チャート解説一覧) -->
+    <div id="view-book" class="space-y-6">
+      
+      <!-- Book Banner & CDS Chart Official Link -->
+      <div id="book-header-banner" class="rounded-2xl p-6 shadow-sm border transition-all duration-300">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          
+          <!-- Search Input -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="app.handleSearch(this.value)"
+              placeholder="例題番号（例: 例題1, 125, 重要例題）や単元名で絞り込み..." 
+              class="w-full pl-10 pr-10 py-2.5 rounded-lg text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition"
+            >
+            <button id="search-clear-btn" onclick="app.clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Chapter Filter Dropdown -->
+          <div class="flex items-center gap-2">
+            <select 
+              id="chapter-select" 
+              onchange="app.handleChapterFilter(this.value)"
+              class="text-sm py-2.5 px-3 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[240px] truncate"
+            >
+              <option value="all">すべての章</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Status Filter Pills -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <div class="flex flex-wrap items-center gap-1.5" id="status-filter-buttons">
+            <button onclick="app.setStatusFilter('all')" data-status="all" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-blue-600 text-white shadow-sm">
+              <span>すべて</span>
+              <span id="cnt-all" class="opacity-80">0</span>
+            </button>
+            <button onclick="app.setStatusFilter('unstudied')" data-status="unstudied" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span>未着手</span>
+              <span id="cnt-unstudied" class="opacity-80">0</span>
+            </button>
+            <button onclick="app.setStatusFilter('maru')" data-status="maru" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>〇 習得済</span>
+              <span id="cnt-maru" class="opacity-80">0</span>
+            </button>
+            <button onclick="app.setStatusFilter('sankaku')" data-status="sankaku" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>△ 要復習</span>
+              <span id="cnt-sankaku" class="opacity-80">0</span>
+            </button>
+            <button onclick="app.setStatusFilter('batsu')" data-status="batsu" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span>× 未定着</span>
+              <span id="cnt-batsu" class="opacity-80">0</span>
+            </button>
+            <button onclick="app.setStatusFilter('starred')" data-status="starred" class="filter-btn px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+              <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400 text-amber-400"></i>
+              <span>お気に入り</span>
+              <span id="cnt-starred" class="opacity-80">0</span>
+            </button>
+          </div>
+
+          <!-- Expand / Collapse All Accordions -->
+          <div class="flex items-center gap-2">
+            <button onclick="app.toggleAllChapters(true)" class="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              すべて開く
+            </button>
+            <span class="text-slate-300 dark:text-slate-700">|</span>
+            <button onclick="app.toggleAllChapters(false)" class="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              すべて閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Problem List / Tree Container -->
+      <div id="curriculum-container" class="space-y-4">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: 逆算ペースメーカー (PACEMAKER VIEW) -->
+    <div id="view-pacemaker" class="hidden space-y-6">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- VIEW 3: DASHBOARD (進捗ダッシュボード & 要復習まとめ) -->
+    <div id="view-dashboard" class="hidden space-y-6">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- VIEW 4: CUSTOM RESOURCES (自作資料・リンクまとめ) -->
+    <div id="view-custom" class="hidden space-y-6">
+      <!-- Rendered by JS -->
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-slate-700 dark:text-slate-300">StudyHub</span>
+        <span>•</span>
+        <span>青チャートデジタル解説教材（数研出版）学習支援ポータル</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>データはすべてお使いの端末に保存されます</span>
+        <button onclick="app.openBackupModal()" class="text-blue-600 dark:text-blue-400 hover:underline">バックアップ / 復元</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- DEDICATED DIRECT VIDEO POPUP MODAL (解説動画専用ポップアップ) -->
+  <div id="modal-video-viewer" onclick="if(event.target === this) app.closeVideoModal()" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 modal-backdrop">
+    <div onclick="event.stopPropagation()" class="bg-white dark:bg-slate-900 w-full max-w-5xl h-[92vh] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden modal-content">
+      
+      <!-- Video Header Bar -->
+      <div class="px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-850 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="vmodal-subject-badge" class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 shrink-0">
+            数学I+A
+          </span>
+          <div class="truncate">
+            <h3 id="vmodal-title" class="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
+              例題1(1)
+            </h3>
+            <p id="vmodal-subtitle" class="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              数I 第1章 数と式 > 1節
+            </p>
+          </div>
+        </div>
+
+        <!-- Center Controls: Status & Star & Note -->
+        <div class="hidden md:flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1 bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+            <button onclick="app.setVideoModalStatus('unstudied')" id="vmodal-btn-unstudied" class="px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium transition">
+              未着手
+            </button>
+            <button onclick="app.setVideoModalStatus('maru')" id="vmodal-btn-maru" class="px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium transition">
+              〇 習得済
+            </button>
+            <button onclick="app.setVideoModalStatus('sankaku')" id="vmodal-btn-sankaku" class="px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium transition">
+              △ 要復習
+            </button>
+            <button onclick="app.setVideoModalStatus('batsu')" id="vmodal-btn-batsu" class="px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium transition">
+              × 未定着
+            </button>
+          </div>
+
+          <button id="vmodal-star-btn" onclick="app.toggleVideoModalStar()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-amber-400 transition" title="お気に入り登録">
+            <i data-lucide="star" class="w-4 h-4"></i>
+          </button>
+
+          <button onclick="app.toggleVideoModalNote()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="メモ欄を表示/非表示">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Window Action Buttons -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="app.openCurrentVideoInWindow()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs flex items-center gap-1 font-medium transition" title="独立した別ウィンドウとしてポップアップ表示">
+            <i data-lucide="app-window" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">別ウィンドウ</span>
+          </button>
+          <a id="vmodal-tab-link" href="#" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-200/60 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs transition" title="ブラウザの別タブで開く">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+          <button onclick="app.closeVideoModal()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition" title="閉じる (Esc)">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Status Bar (Visible only on small screens) -->
+      <div class="md:hidden px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-1">
+          <button onclick="app.setVideoModalStatus('unstudied')" id="vmodal-m-btn-unstudied" class="px-2 py-1 rounded text-slate-600">未着手</button>
+          <button onclick="app.setVideoModalStatus('maru')" id="vmodal-m-btn-maru" class="px-2 py-1 rounded text-slate-600">〇</button>
+          <button onclick="app.setVideoModalStatus('sankaku')" id="vmodal-m-btn-sankaku" class="px-2 py-1 rounded text-slate-600">△</button>
+          <button onclick="app.setVideoModalStatus('batsu')" id="vmodal-m-btn-batsu" class="px-2 py-1 rounded text-slate-600">×</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="vmodal-m-star-btn" onclick="app.toggleVideoModalStar()" class="p-1 text-slate-400">
+            <i data-lucide="star" class="w-4 h-4"></i>
+          </button>
+          <button onclick="app.toggleVideoModalNote()" class="p-1 text-slate-400">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Fallback info banner (placed at top bar so it never overlaps the video playback bar!) -->
+      <div id="vmodal-fallback" class="hidden px-4 py-2 bg-slate-900 border-b border-slate-800 text-slate-200 text-xs flex items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-2 min-w-0">
+          <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0"></i>
+          <span class="truncate">画面が真っ白な場合は、右上の「別ウィンドウ」または「別タブ」でお試しください</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="app.openCurrentVideoInWindow()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-1.5">
+            <i data-lucide="app-window" class="w-3.5 h-3.5"></i>
+            <span>別ウィンドウで再生</span>
+          </button>
+          <button onclick="document.getElementById('vmodal-fallback').classList.add('hidden')" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition" title="このメッセージを非表示">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Video Body (Flex with optional Note Sidebar) -->
+      <div class="flex-1 relative flex flex-col md:flex-row bg-black overflow-hidden">
+        
+        <!-- Embedded Iframe Viewer -->
+        <div class="flex-1 relative w-full h-full flex items-center justify-center bg-slate-950">
+          <iframe 
+            id="vmodal-iframe" 
+            src="" 
+            class="w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+          ></iframe>
+
+
+        </div>
+
+        <!-- Note Drawer / Sidebar -->
+        <div id="vmodal-note-panel" class="hidden w-full md:w-80 bg-white dark:bg-slate-900 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 p-4 flex flex-col justify-between shrink-0">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-xs text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500"></i>
+                <span>この問題の学習メモ</span>
+              </span>
+              <button onclick="app.toggleVideoModalNote()" class="text-slate-400 hover:text-slate-600 text-xs">
+                閉じる
+              </button>
+            </div>
+            <textarea 
+              id="vmodal-note-input"
+              rows="8"
+              placeholder="動画を見ながら気づいたこと、解法のポイント、間違えた原因などをメモ..."
+              class="w-full text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <div class="pt-3">
+            <button onclick="app.saveVideoModalNote()" class="w-full py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition">
+              メモを保存
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GOAL CREATION / EDIT MODAL (逆算ペースメーカー目標設定) -->
+  <div id="modal-goal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <i data-lucide="target" class="w-4 h-4"></i>
+          </div>
+          <h3 class="font-bold text-base text-slate-800 dark:text-slate-100" id="modal-goal-title">学習目標・期日の設定</h3>
+        </div>
+        <button onclick="app.closeGoalModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="app.handleSaveGoal(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="goal-form-id">
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">目標の名称 *</label>
+          <input type="text" id="goal-form-name" required placeholder="例: 塾の宿題 (10/10まで), 中間テスト対策 (数I 2次関数まで)..." class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">対象科目 / 書籍 *</label>
+            <select id="goal-form-book" onchange="app.handleGoalBookChange(this.value)" class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">達成期日 (締め切り日) *</label>
+            <input type="date" id="goal-form-deadline" required class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">演習の対象範囲 *</label>
+          <div class="space-y-2">
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" name="goal-scope-type" value="all" checked onchange="app.handleGoalScopeTypeChange('all')">
+                <span>書籍全体（すべての章）</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" name="goal-scope-type" value="custom" onchange="app.handleGoalScopeTypeChange('custom')">
+                <span>特定の章を指定</span>
+              </label>
+            </div>
+
+            <div id="goal-scope-custom-container" class="hidden p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+              <span class="text-[11px] text-slate-500">対象にする章を選択してください（複数選択可）：</span>
+              <div id="goal-chapters-checkboxes" class="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                <!-- Checkboxes populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 例題番号での範囲指定 -->
+        <div class="space-y-1.5">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 text-sm">例題番号で範囲指定 <span class="text-slate-400 font-normal text-xs">（任意）</span></label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="goal-form-num-start" min="1" placeholder="始（例: 127）"
+              class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <span class="text-slate-400 shrink-0 font-bold">〜</span>
+            <input type="number" id="goal-form-num-end" min="1" placeholder="終（例: 140）"
+              class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          </div>
+          <p class="text-[11px] text-slate-400">※ 指定した番号の例題のみが目標の対象になります（未入力時は全例題）。</p>
+        </div>
+
+        <!-- 対象ステータス絞り込み -->
+        <div class="space-y-1.5">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 text-sm">対象ステータス</label>
+          <div class="flex flex-wrap gap-3 text-sm">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="goal-status-filter" value="all" checked class="accent-blue-600">
+              <span>すべて</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="goal-status-filter" value="not-maru" class="accent-blue-600">
+              <span>△×のみ（未〇）</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="goal-status-filter" value="sankaku" class="accent-amber-500">
+              <span class="text-amber-600 font-medium">△のみ</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="goal-status-filter" value="batsu" class="accent-rose-500">
+              <span class="text-rose-600 font-medium">×のみ</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="app.closeGoalModal()" class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+            キャンセル
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+            目標を保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PROBLEM NOTE & DETAIL MODAL -->
+  <div id="modal-problem-note" onclick="if(event.target === this) app.closeProblemModal()" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop">
+    <div onclick="event.stopPropagation()" class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 modal-content">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span id="modal-prob-subject" class="text-xs px-2 py-0.5 rounded-full font-medium">数学I+A</span>
+          <h3 id="modal-prob-title" class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">例題1</h3>
+          <p id="modal-prob-path" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">第1章 数と式 > 1節</p>
+        </div>
+        <button onclick="app.closeProblemModal()" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition" title="閉じる (自動保存)">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Actions Banner -->
+      <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between gap-2 border border-slate-200/60 dark:border-slate-700/60">
+        <button onclick="app.openVideoFromProblemModal()" class="text-xs font-semibold px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm transition">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-white"></i>
+          <span>解説動画を再生 (ポップアップ)</span>
+        </button>
+
+        <button id="modal-prob-star" onclick="app.toggleCurrentModalStar()" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 transition" title="お気に入り登録">
+          <i data-lucide="star" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Status Radio Buttons -->
+      <div class="space-y-1.5">
+        <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">学習ステータス</label>
+        <div class="grid grid-cols-4 gap-2 text-xs">
+          <button onclick="app.setCurrentModalStatus('unstudied')" id="modal-btn-unstudied" class="py-2 px-3 rounded-lg border text-center font-medium transition">
+            未着手
+          </button>
+          <button onclick="app.setCurrentModalStatus('maru')" id="modal-btn-maru" class="py-2 px-3 rounded-lg border text-center font-medium transition">
+            〇 習得済
+          </button>
+          <button onclick="app.setCurrentModalStatus('sankaku')" id="modal-btn-sankaku" class="py-2 px-3 rounded-lg border text-center font-medium transition">
+            △ 要復習
+          </button>
+          <button onclick="app.setCurrentModalStatus('batsu')" id="modal-btn-batsu" class="py-2 px-3 rounded-lg border text-center font-medium transition">
+            × 未定着
+          </button>
+        </div>
+      </div>
+
+      <!-- Notes Field -->
+      <div class="space-y-1.5">
+        <label for="modal-prob-note-input" class="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+          <span>学習メモ / つまずいたポイント</span>
+          <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal flex items-center gap-1">
+            <i data-lucide="check" class="w-3 h-3"></i> 自動保存されます
+          </span>
+        </label>
+        <textarea 
+          id="modal-prob-note-input" 
+          rows="4" 
+          placeholder="例: (2)の展開公式の使い分けを復習。マイナス符号の扱いに注意。"
+          class="w-full text-xs sm:text-sm p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-between items-center pt-2">
+        <span class="text-[11px] text-slate-400">外側をクリックまたは「×」で保存して閉じます</span>
+        <button onclick="app.closeProblemModal()" class="py-2 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold shadow-sm transition">
+          閉じる
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM RESOURCE MODAL -->
+  <div id="modal-custom-resource" onclick="if(event.target === this) app.closeCustomModal()" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 modal-content">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-slate-800 dark:text-slate-100" id="custom-modal-title">学習資料の追加</h3>
+        <button onclick="app.closeCustomModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="app.handleSaveCustomResource(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="custom-res-id">
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">資料・参考書のタイトル *</label>
+          <input type="text" id="custom-res-name" required placeholder="例: 物理のエッセンス, YouTube 予備校のノリで学ぶ大学数学..." class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">科目 / カテゴリ</label>
+          <select id="custom-res-category" class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <option value="数学">数学</option>
+            <option value="英語">英語</option>
+            <option value="物理">物理</option>
+            <option value="化学">化学</option>
+            <option value="国語">国語</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Webリンク / URL (任意)</label>
+          <input type="url" id="custom-res-url" placeholder="https://..." class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">学習メモ・説明 (任意)</label>
+          <textarea id="custom-res-desc" rows="3" placeholder="重要なポイントや使い方のメモ..." class="w-full p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="app.closeCustomModal()" class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+            キャンセル
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+            保存する
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BACKUP & RESTORE MODAL -->
+  <div id="modal-backup" onclick="if(event.target === this) app.closeBackupModal()" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-blue-500"></i>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100">学習データの管理</h3>
+        </div>
+        <button onclick="app.closeBackupModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 dark:text-slate-400">
+        進捗やメモ、目標、自作資料データはブラウザに自動保存されています。他の端末へ引き継ぐ場合やバックアップを取りたい場合は以下をご利用ください。
+      </p>
+
+      <div class="space-y-3 text-xs">
+        <button onclick="app.exportDataJSON()" class="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center gap-3 text-left transition">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <i data-lucide="download" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="font-semibold text-slate-700 dark:text-slate-200">バックアップを保存 (JSON書き出し)</div>
+            <div class="text-[11px] text-slate-400">学習記録・メモ・目標をファイルとして保存します</div>
+          </div>
+        </button>
+
+        <label class="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/80 flex items-center gap-3 text-left cursor-pointer transition">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-slate-700 dark:text-slate-200">バックアップから復元 (JSON読み込み)</div>
+            <div class="text-[11px] text-slate-400">保存したJSONファイルを指定して記録を復元します</div>
+          </div>
+          <input type="file" accept=".json" onchange="app.importDataJSON(event)" class="hidden">
+        </label>
+
+        <button onclick="app.confirmResetData()" class="w-full p-3 rounded-xl border border-rose-200 dark:border-rose-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-3 text-left text-rose-600 dark:text-rose-400 transition">
+          <div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center text-rose-600 shrink-0">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="font-semibold">学習データを初期化</div>
+            <div class="text-[11px] text-rose-400/80">すべてのチェック、目標、メモを消去してリセットします</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POMODORO TIMER FLOATING MODAL -->
+  <div id="modal-timer" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-6 animate-in fade-in zoom-in duration-150">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="timer" class="w-5 h-5 text-amber-500"></i>
+          <h3 class="font-bold text-slate-800 dark:text-slate-100">ポモドーロ集中タイマー</h3>
+        </div>
+        <button onclick="app.toggleTimerModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-medium text-center">
+        <button onclick="app.setTimerMode('work')" id="timer-mode-work" class="py-1.5 rounded-lg bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-300 shadow-sm transition">集中 25分</button>
+        <button onclick="app.setTimerMode('shortBreak')" id="timer-mode-shortBreak" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition">小休憩 5分</button>
+        <button onclick="app.setTimerMode('longBreak')" id="timer-mode-longBreak" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition">長休憩 15分</button>
+      </div>
+
+      <div class="text-center py-4">
+        <div id="modal-timer-digits" class="text-6xl font-extrabold font-mono tracking-wider text-slate-800 dark:text-slate-100">
+          25:00
+        </div>
+        <p id="timer-label" class="text-xs font-medium text-slate-400 mt-2">1つの例題に集中して取り組みましょう</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button onclick="app.startStopTimer()" id="btn-timer-play" class="flex-1 py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition">
+          <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+          <span>スタート</span>
+        </button>
+        <button onclick="app.resetTimer()" class="py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium text-sm transition" title="リセット">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <span>本日の集中セッション数</span>
+        <span class="font-bold text-slate-700 dark:text-slate-200 font-mono text-sm" id="timer-sessions-count">0 回</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD DATA & SCRIPTS -->
+  <script src="data/curriculum_data.js?v=20261028_1800"></script>
+  <script src="app.js?v=20261031_v4"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
